@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "twitch-bot:lib"
+
+    - path: "./app/Main.hs"
+      component: "twitch-bot:exe:twitch-bot-exe"
+
+    - path: "./app/Paths_twitch_bot.hs"
+      component: "twitch-bot:exe:twitch-bot-exe"
+
+    - path: "./test"
+      component: "twitch-bot:test:twitch-bot-test"
