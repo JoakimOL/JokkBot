@@ -26,8 +26,8 @@ import Irc.RawIrcMsg
 import Irc.UserInfo (userNick, UserInfo)
 
 data BotContext = BotContext
-    { socket :: Socket
-    , remoteAddr :: SockAddr
+    { socket :: !Socket
+    , remoteAddr :: !SockAddr
     }
 
 crlf :: B.ByteString
@@ -36,8 +36,7 @@ crlf = "\r\n"
 sendPong :: [Text] -> BotContext -> IO()
 sendPong txt ctx = do
     print ("sending pong to " ++ show (remoteAddr ctx) ++ " " ++ show (socket ctx) ++ " with text: " ++ Prelude.concatMap unpack txt)
-    -- send (socket ctx) "PONG :tmi.twitch.com" 
-    send (socket ctx) $ renderRawIrcMsg $ ircPong txt
+    send (socket ctx) $ B.append (TLE.encodeUtf8 "PONG :tmi.twitch.com") crlf
     print "sent pong"
 
 sendPrivMsg :: BotContext -> String -> IO()
@@ -79,19 +78,23 @@ handleMessage text ctx = do
             Privmsg user _ text -> do
                 putStrLn "detected privmsg!"
                 handlePrivMsg user text
-            _ -> do 
+            _unhandled -> do 
                 putStrLn "unhandled message:"
                 print text
       Nothing -> putStrLn " fak"
 
 loop :: BotContext -> IO()
 loop ctx = do
-        msg <- recv (socket ctx) 512
-        case msg of 
-          Just text -> handleMessage text ctx
-          Nothing -> die "connection to socket lost"
-        loop ctx
+    msg <- recv (socket ctx) 512
+    case msg of 
+      Just text -> handleMessage text ctx
+      Nothing -> die "connection to socket lost"
+    loop ctx
 
+--
+-- remember, this get request gives you the auth token
+-- https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=<client_id>&redirect_uri=<redirect_url that i registered with>&scope=chat%3Aread+chat%3Aedit
+--
 connectToIrc :: Config.Config -> IO ()
 connectToIrc config = do
     -- connect "localhost" "6667" $ \(socket, remoteAddr) -> do
@@ -107,4 +110,3 @@ connectToIrc config = do
         -- send socket ("CAP REQ :twitch.tv/tags" `B.append` crlf)
         forkIO $ loop context
         forever $ passCommand context
-    putStrLn "hei"
