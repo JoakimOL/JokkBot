@@ -40,6 +40,10 @@ sendPong txt ctx = do
     send (socket ctx) $ renderRawIrcMsg $ ircPong txt
     print "sent pong"
 
+sendPrivMsg :: BotContext -> String -> IO()
+sendPrivMsg ctx msg =
+    send (socket ctx) $ B.intercalate (TLE.encodeUtf8 $ Data.Text.pack msg) ["PRIVMSG #pikkintheface :", crlf]
+
 handlePrivMsg :: Irc.UserInfo.UserInfo -> Text -> IO()
 handlePrivMsg user text =
     case trimmed_text of
@@ -54,13 +58,14 @@ handlePrivMsg user text =
 
 passCommand :: BotContext-> IO()
 passCommand ctx = do
-    cmd <- getLine
-    case Prelude.length cmd of
-      0 -> return()
-      _ -> print cmd
-    -- eof <- isEOF
-    -- unless eof $ do
-        -- passCommand ctx
+    cmd <- fmap Prelude.words getLine
+    case cmd of
+      ("send" : params) ->
+          do
+              let msg = Prelude.unwords params
+              sendPrivMsg ctx msg
+      _unknown -> print "unknown command"
+    return()
 
 handleMessage :: B.ByteString -> BotContext -> IO ()
 handleMessage text ctx = do
