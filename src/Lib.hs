@@ -41,9 +41,16 @@ sendPong txt ctx = do
     print "sent pong"
 
 handlePrivMsg :: Irc.UserInfo.UserInfo -> Text -> IO()
-handlePrivMsg user text = do
-    print user
-    print text
+handlePrivMsg user text =
+    case trimmed_text of
+      "aaaa" -> print "I can dispatch a handler here"
+      "bbbb" -> print "Found something else! I can dispatch another handler here"
+      _uninteresting -> 
+        do
+            print "uninteresting message:"
+            print user
+            print trimmed_text
+      where trimmed_text = strip text
 
 passCommand :: BotContext-> IO()
 passCommand ctx = do
