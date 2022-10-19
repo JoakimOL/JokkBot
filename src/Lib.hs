@@ -16,6 +16,8 @@ import qualified Data.Map              as M
 import Data.Text.Encoding as TLE
 import Data.Map((!))
 import Data.Text
+import Data.Text.IO
+import Text.Printf
 import Network.HTTP.Client
 import Network.HTTP.Types.Status (Status(statusCode))
 import Network.Simple.TCP
@@ -35,13 +37,13 @@ crlf = "\r\n"
 
 sendPong :: [Text] -> BotContext -> IO()
 sendPong txt ctx = do
-    print ("sending pong to " ++ show (remoteAddr ctx) ++ " " ++ show (socket ctx) ++ " with text: " ++ Prelude.concatMap unpack txt)
+    printf "sendng pong to %s with text: %s\n" (show (remoteAddr ctx)) (Prelude.concatMap unpack txt)
     send (socket ctx) $ B.append (TLE.encodeUtf8 "PONG :tmi.twitch.com") crlf
     print "sent pong"
 
-sendPrivMsg :: BotContext -> String -> IO()
+sendPrivMsg :: BotContext -> Text -> IO()
 sendPrivMsg ctx msg =
-    send (socket ctx) $ B.intercalate (TLE.encodeUtf8 $ Data.Text.pack msg) ["PRIVMSG #pikkintheface :", crlf]
+    send (socket ctx) $ B.intercalate (TLE.encodeUtf8 msg) [TLE.encodeUtf8 "PRIVMSG #pikkintheface :", crlf]
 
 handlePrivMsg :: Irc.UserInfo.UserInfo -> Text -> IO()
 handlePrivMsg user text =
@@ -50,18 +52,16 @@ handlePrivMsg user text =
       "bbbb" -> print "Found something else! I can dispatch another handler here"
       _uninteresting ->
         do
-            print "uninteresting message:"
-            print user
-            print trimmed_text
+            printf "uninteresting message: %s: %s\n" (show user) trimmed_text
       where trimmed_text = strip text
 
 passCommand :: BotContext-> IO()
 passCommand ctx = do
-    cmd <- fmap Prelude.words getLine
+    cmd <- fmap Data.Text.words Data.Text.IO.getLine
     case cmd of
       ("send" : params) ->
           do
-              let msg = Prelude.unwords params
+              let msg = Data.Text.unwords params
               sendPrivMsg ctx msg
       _unknown -> print "unknown command"
     return()
@@ -73,15 +73,14 @@ handleMessage text ctx = do
           let cookedMsg = cookIrcMsg msg
           case cookedMsg of
             Ping txt -> do
-                putStrLn "detected ping!"
+                print "detected ping!"
                 sendPong txt ctx
             Privmsg user _ text -> do
-                putStrLn "detected privmsg!"
+                print "detected privmsg!"
                 handlePrivMsg user text
-                putStrLn "unhandled message:"
-                print text
-      Nothing -> putStrLn " fak"
             _unhandled -> do
+                printf "unhandled message: %s\n" (show text)
+      Nothing -> print " fak"
 
 loop :: BotContext -> IO()
 loop ctx = do
