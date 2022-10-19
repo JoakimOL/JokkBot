@@ -16,18 +16,17 @@ import qualified Data.Map              as M
 import qualified Data.ByteString.Char8 as B
 import Text.Parsec ((<?>))
 import Control.Applicative
--- import Control.Monad.Identity (Identity)
 
-parse rule = Parsec.parse rule "(source)" 
+parse rule = Parsec.parse rule "(source)"
 
 configSeparator :: Parsec.Parsec B.ByteString () ()
 configSeparator = Parsec.spaces >> Parsec.char '=' >> Parsec.spaces
 
 configIdentifier :: Parsec.Parsec B.ByteString() B.ByteString
-configIdentifier = do 
+configIdentifier = do
     c  <- Parsec.alphaNum
     cs <- Parsec.many (Parsec.alphaNum <|> Parsec.char '_')
-    return (B.pack $ c:cs)
+    return (B.pack $ c:cs)
 
 keyValue :: Parsec.Parsec B.ByteString () (B.ByteString, B.ByteString)
 keyValue = do
@@ -38,7 +37,7 @@ keyValue = do
 
 keyValueFile = Parsec.endBy keyValue (Parsec.oneOf "\n\r")
 
--- data Config = Config 
+-- data Config = Config
 --     { hostname :: String
 --     , hostport :: Int
 --     , username :: String

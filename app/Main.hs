@@ -19,6 +19,6 @@ main = do
       Just config -> do
         print config
         connectToIrc config
-      Nothing -> 
+      Nothing ->
           die "Invalid configuration. Not able to parse"
     putStrLn "woow"

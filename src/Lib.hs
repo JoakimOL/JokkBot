@@ -48,7 +48,7 @@ handlePrivMsg user text =
     case trimmed_text of
       "aaaa" -> print "I can dispatch a handler here"
       "bbbb" -> print "Found something else! I can dispatch another handler here"
-      _uninteresting -> 
+      _uninteresting ->
         do
             print "uninteresting message:"
             print user
@@ -69,24 +69,24 @@ passCommand ctx = do
 handleMessage :: B.ByteString -> BotContext -> IO ()
 handleMessage text ctx = do
     case parseRawIrcMsg $ TLE.decodeUtf8 text of
-      Just msg ->  do 
+      Just msg ->  do
           let cookedMsg = cookIrcMsg msg
-          case cookedMsg of 
+          case cookedMsg of
             Ping txt -> do
                 putStrLn "detected ping!"
                 sendPong txt ctx
             Privmsg user _ text -> do
                 putStrLn "detected privmsg!"
                 handlePrivMsg user text
-            _unhandled -> do 
                 putStrLn "unhandled message:"
                 print text
       Nothing -> putStrLn " fak"
+            _unhandled -> do
 
 loop :: BotContext -> IO()
 loop ctx = do
     msg <- recv (socket ctx) 512
-    case msg of 
+    case msg of
       Just text -> handleMessage text ctx
       Nothing -> die "connection to socket lost"
     loop ctx
@@ -100,8 +100,8 @@ connectToIrc config = do
     -- connect "localhost" "6667" $ \(socket, remoteAddr) -> do
     connect "irc.chat.twitch.tv" "6667" $ \(socket, remoteAddr) -> do
         let context = BotContext socket remoteAddr
-        send socket $ B.intercalate (config ! "code") ["PASS oauth:", crlf]
-        send socket $ B.intercalate (config ! "username") ["NICK ", crlf]
+        send socket $ B.intercalate (config ! "code") ["PASS oauth:", crlf]
+        send socket $ B.intercalate (config ! "username") ["NICK ", crlf]
         send socket $ B.intercalate (config ! "channel") ["JOIN #", crlf]
         print socket
         print remoteAddr
