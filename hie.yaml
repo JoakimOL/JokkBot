@@ -1,13 +1,13 @@
 cradle:
   stack:
     - path: "./src"
-      component: "twitch-bot:lib"
+      component: "jokkbot:lib"
 
     - path: "./app/Main.hs"
-      component: "twitch-bot:exe:twitch-bot-exe"
+      component: "jokkbot:exe:jokkbot-exe"
 
     - path: "./app/Paths_twitch_bot.hs"
-      component: "twitch-bot:exe:twitch-bot-exe"
+      component: "jokkbot:exe:jokkbot-exe"
 
     - path: "./test"
-      component: "twitch-bot:test:twitch-bot-test"
+      component: "jokkbot:test:jokkbot-test"

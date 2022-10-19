@@ -1,4 +1,4 @@
-name:                twitch-bot
+name:                jokkbot
 version:             0.1.0.0
 github:              "JoakimOl/Jokkbot"
 license:             BSD3
@@ -35,7 +35,7 @@ library:
   source-dirs: src
 
 executables:
-  twitch-bot-exe:
+  jokkbot-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -43,10 +43,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - twitch-bot
+    - jokkbot
 
 tests:
-  twitch-bot-test:
+  jokkbot-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -54,4 +54,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - twitch-bot
+    - jokkbot

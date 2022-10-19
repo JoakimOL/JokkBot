@@ -1,1 +1,1 @@
-# twitch-bot
+# jokkbot
