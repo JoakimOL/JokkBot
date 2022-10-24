@@ -2,7 +2,8 @@
 module AuthImpl
     ( openBrowser
     , getCode
-    , extractCode
+    , getRequestParameters
+    , getRequestParameterValue
     , runTCPServer
     ) where
 
@@ -27,25 +28,28 @@ openBrowser url = exitCodeToBool `fmap` rawSystem executable argv
 
 getCode :: IO B.ByteString
 getCode = do
-    response <- runTCPServer Nothing "3000"
-    (print . T.words . T.decodeUtf8) response
-    print $ extractCode $ T.decodeUtf8 response
+    response <- runTCPServer "3000"
+    print
+        $ getRequestParameterValue "code"
+        $ getRequestParameters
+        $ T.decodeUtf8 response
     return response
 
-extractCode :: T.Text -> Maybe T.Text
-extractCode text = case hits of
+getRequestParameterValue :: T.Text -> [T.Text] -> Maybe T.Text
+getRequestParameterValue text params = case hits of
                      [x, y]     -> Just y
+                     -- TODO this is ugly
+                     (x:y:z)    -> Just y
                      _otherwise -> Nothing
                    where hits = concat
-                              . filter (\x -> length x == 2)
-                              $ map (T.splitOn "code=") (T.words text)
--- extractCode text = (!! 1)                                 -- get the right hand side of the match [text] -> text
---                  . concat                                 -- flatten list [[text]] -> [text]
---                  . filter (\x -> length x == 2)           -- throw away words that didnt match
---                  $ map (T.splitOn "code=") (T.words text) -- split all words on "code=" [text] -> [[text]]
+                              . filter (\x -> head x == text)
+                              $ map (T.splitOn "=") params
 
-runTCPServer :: Maybe HostName -> ServiceName -> IO B.ByteString
-runTCPServer mhost port = do
+getRequestParameters :: T.Text -> [T.Text]
+getRequestParameters text = concatMap (T.splitOn "&") (T.words text)
+
+runTCPServer :: ServiceName -> IO B.ByteString
+runTCPServer port = do
     addr <- resolve
     E.bracket (open addr) close connect
   where
@@ -54,7 +58,7 @@ runTCPServer mhost port = do
                 addrFlags = [AI_PASSIVE]
               , addrSocketType = Stream
               }
-        Prelude.head <$> getAddrInfo (Just hints) mhost (Just port)
+        head <$> getAddrInfo (Just hints) Nothing (Just port)
     open addr = E.bracketOnError (openSocket addr) close $ \sock -> do
         setSocketOption sock ReuseAddr 1
         withFdSocket sock setCloseOnExecIfNeeded

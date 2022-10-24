@@ -9,13 +9,11 @@ spec = do
     describe "Auth" $ do
         it "should successfully open a browser" $ do
             pendingWith "super annoying to open a browser all the time.."
-        --     exitCode <- openBrowser "https://vg.no"
-        --     exitCode `shouldBe` True
-        it "should extract the code from a valid request string" $ do
-            extractCode "aaaa&code=234" `shouldBe` Just "234"
-
-        it "A string without a code returns nothing" $ do
-            extractCode "aaaa&poop=234" `shouldBe` Nothing
-
-        it "A string with several codes returns the first" $ do
-            extractCode "aaaa/code=234&code=123" `shouldBe` Just "234"
+        it "should be able to split url parameters" $ do
+            getRequestParameters "aaaa&code=234&poop=shit" `shouldBe` ["aaaa", "code=234", "poop=shit"]
+        it "should be able to find one parameter in particular" $ do
+            getRequestParameterValue "code" ["aaaa", "code=234", "poop=shit"] `shouldBe` Just "234"
+        it "should return nothing if the given parameter does not exist" $ do
+            getRequestParameterValue "code" ["aaaa", "poop=shit"] `shouldBe` Nothing
+        it "should return the first hit if there are several hits" $ do
+            getRequestParameterValue "poop" ["aaaa", "poop=shit", "poop=turd"] `shouldBe` Just "shit"
