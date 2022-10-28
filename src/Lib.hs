@@ -18,8 +18,6 @@ import Data.Map((!))
 import Data.Text
 import Data.Text.IO
 import Text.Printf
-import Network.HTTP.Client
-import Network.HTTP.Types.Status (Status(statusCode))
 import Network.Simple.TCP
 import Irc.Commands
 import Irc.Identifier (idText)
