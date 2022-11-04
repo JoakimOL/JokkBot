@@ -8,10 +8,6 @@ import System.Exit
 
 import Lib
 import Config
-
-
-getJSON :: FilePath -> IO B.ByteString
-getJSON = B.readFile
 import Args
 
 main :: IO ()
