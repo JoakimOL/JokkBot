@@ -6,6 +6,7 @@ module Lib
     ) where
 
 import Config
+import Commands (lookUpStaticCommand)
 
 import Control.Monad
 import Control.Concurrent
@@ -43,14 +44,13 @@ sendPrivMsg :: BotContext -> Text -> IO()
 sendPrivMsg ctx msg =
     send (socket ctx) $ B.intercalate (TLE.encodeUtf8 msg) [TLE.encodeUtf8 "PRIVMSG #pikkintheface :", crlf]
 
-handlePrivMsg :: Irc.UserInfo.UserInfo -> Text -> IO()
-handlePrivMsg user text =
-    case trimmed_text of
-      "aaaa" -> print "I can dispatch a handler here"
-      "bbbb" -> print "Found something else! I can dispatch another handler here"
-      _uninteresting ->
-        do
-            printf "uninteresting message: %s: %s\n" (show user) trimmed_text
+handlePrivMsg :: BotContext -> Irc.UserInfo.UserInfo -> Text -> IO()
+handlePrivMsg ctx user text =
+    case lookUpStaticCommand trimmed_text of
+        Just response -> do 
+           print "found something i know, sending auto response"
+           sendPrivMsg ctx response
+        Nothing -> print "yea i dunno"
       where trimmed_text = strip text
 
 passCommand :: BotContext-> IO()
@@ -73,9 +73,9 @@ handleMessage text ctx = do
             Ping txt -> do
                 print "detected ping!"
                 sendPong txt ctx
-            Privmsg user _ text -> do
+            Privmsg source _ text -> do
                 print "detected privmsg!"
-                handlePrivMsg user text
+                handlePrivMsg ctx (srcUser source) text
             _unhandled -> do
                 printf "unhandled message: %s\n" (show text)
       Nothing -> print " fak"
